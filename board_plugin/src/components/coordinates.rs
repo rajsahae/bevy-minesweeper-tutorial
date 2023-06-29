@@ -1,13 +1,14 @@
-use bevy::prelude::Component;
+use bevy::prelude::*;
 use std::fmt::{self, Display, Formatter};
 use std::ops::{Add, Sub};
 
 #[cfg(feature = "debug")]
-use bevy::prelude::Reflect;
+use bevy_inspector_egui::prelude::*;
 
 #[cfg_attr(
     feature = "debug",
-    derive(Reflect, bevy_inspector_egui::InspectorOptions)
+    derive(Reflect, InspectorOptions),
+    reflect(InspectorOptions)
 )]
 #[derive(Debug, Default, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Component)]
 pub struct Coordinates {

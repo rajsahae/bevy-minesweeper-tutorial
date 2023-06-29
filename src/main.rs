@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use board_plugin::BoardPlugin;
+use board_plugin::{resources::BoardOptions, BoardPlugin};
 
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -16,18 +16,22 @@ fn main() {
 
     let mut app = App::new();
 
-    // Bevy default plugins with window setup
-    app.add_plugins(DefaultPlugins.set(window));
-    // startup system (cameras)
-    app.add_startup_system(camera_setup);
-
     #[cfg(feature = "debug")]
     // Debug hiearchy inspector
     app.add_plugin(WorldInspectorPlugin::new());
 
-    app.add_plugin(BoardPlugin);
-
-    app.run();
+    // Bevy default plugins with window setup
+    app.add_plugins(DefaultPlugins.set(window))
+        // startup system (cameras)
+        .add_startup_system(camera_setup)
+        .insert_resource(BoardOptions {
+            map_size: (20, 20),
+            bomb_count: 40,
+            tile_padding: 3.0,
+            ..default()
+        })
+        .add_plugin(BoardPlugin)
+        .run();
 }
 
 fn camera_setup(mut commands: Commands) {
