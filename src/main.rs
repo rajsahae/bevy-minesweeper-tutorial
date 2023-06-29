@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use board_plugin::BoardPlugin;
 
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -23,6 +24,8 @@ fn main() {
     #[cfg(feature = "debug")]
     // Debug hiearchy inspector
     app.add_plugin(WorldInspectorPlugin::new());
+
+    app.add_plugin(BoardPlugin);
 
     app.run();
 }
