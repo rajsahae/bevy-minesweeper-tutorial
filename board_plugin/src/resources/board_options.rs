@@ -1,15 +1,15 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "debug")]
-use bevy_inspector_egui::prelude::*;
+// #[cfg(feature = "debug")]
+// use bevy_inspector_egui::prelude::*;
 
-/// Tile size options
-#[cfg_attr(
-    feature = "debug",
-    derive(Reflect, InspectorOptions),
-    reflect(InspectorOptions)
-)]
+// /// Tile size options
+// #[cfg_attr(
+//     feature = "debug",
+//     derive(Reflect, InspectorOptions),
+//     reflect(InspectorOptions)
+// )]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum TileSize {
     Fixed(f32),
@@ -25,11 +25,11 @@ impl Default for TileSize {
     }
 }
 
-#[cfg_attr(
-    feature = "debug",
-    derive(Reflect, InspectorOptions),
-    reflect(InspectorOptions)
-)]
+// #[cfg_attr(
+//     feature = "debug",
+//     derive(Reflect, InspectorOptions),
+//     reflect(InspectorOptions)
+// )]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum BoardPosition {
     Centered { offset: Vec3 },
@@ -45,11 +45,11 @@ impl Default for BoardPosition {
 }
 
 // Use serde to allow saving/loading option presets
-#[cfg_attr(
-    feature = "debug",
-    derive(Reflect, InspectorOptions),
-    reflect(InspectorOptions)
-)]
+// #[cfg_attr(
+//     feature = "debug",
+//     derive(Reflect, InspectorOptions),
+//     reflect(InspectorOptions)
+// )]
 #[derive(Debug, Clone, Deserialize, Serialize, Resource)]
 pub struct BoardOptions {
     pub map_size: (u16, u16),

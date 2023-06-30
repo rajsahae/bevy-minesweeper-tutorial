@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use board_plugin::{resources::BoardOptions, BoardPlugin};
 
-#[cfg(feature = "debug")]
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// #[cfg(feature = "debug")]
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 fn main() {
     let window = WindowPlugin {
@@ -16,9 +16,9 @@ fn main() {
 
     let mut app = App::new();
 
-    #[cfg(feature = "debug")]
     // Debug hiearchy inspector
-    app.add_plugin(WorldInspectorPlugin::new());
+    // #[cfg(feature = "debug")]
+    // app.add_plugin(WorldInspectorPlugin::new());
 
     // Bevy default plugins with window setup
     app.add_plugins(DefaultPlugins.set(window))
