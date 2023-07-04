@@ -3,9 +3,10 @@ pub mod resources;
 
 use bevy::log;
 use bevy::prelude::*;
+use bevy::text::{Text, TextAlignment};
 use bevy::window::PrimaryWindow;
-use components::Coordinates;
-use resources::{tile_map::TileMap, BoardOptions, BoardPosition, TileSize};
+use components::*;
+use resources::{tile::Tile, tile_map::TileMap, BoardOptions, BoardPosition, TileSize};
 
 pub struct BoardPlugin;
 
@@ -21,7 +22,12 @@ impl BoardPlugin {
         mut commands: Commands,
         board_options: Option<Res<BoardOptions>>,
         query: Query<&Window, With<PrimaryWindow>>,
+        asset_server: Res<AssetServer>,
     ) {
+        let font: Handle<Font> = asset_server.load("fonts/pixeled.ttf");
+        let bomb_image: Handle<Image> = asset_server.load("sprites/bomb.png");
+        let _flag_image: Handle<Image> = asset_server.load("sprites/flag.png");
+
         let options = match board_options {
             None => BoardOptions::default(),
             Some(o) => o.clone(),
@@ -71,35 +77,81 @@ impl BoardPlugin {
                     })
                     .insert(Name::new("Background"));
 
-                for (y, line) in tile_map.iter().enumerate() {
-                    for (x, _tile) in line.iter().enumerate() {
-                        parent
-                            .spawn(SpriteBundle {
-                                sprite: Sprite {
-                                    color: Color::GRAY,
-                                    custom_size: Some(Vec2::splat(
-                                        tile_size - options.tile_padding,
-                                    )),
-                                    ..default()
-                                },
-                                transform: Transform::from_xyz(
-                                    (x as f32 * tile_size) + (tile_size / 2.),
-                                    (y as f32 * tile_size) + (tile_size / 2.),
-                                    1.,
-                                ),
-                                ..default()
-                            })
-                            .insert(Name::new(format!("Tile ({x}, {y})")))
-                            .insert(Coordinates {
-                                x: x as u16,
-                                y: y as u16,
-                            });
-                    }
-                }
+                Self::spawn_tiles(
+                    parent,
+                    &tile_map,
+                    tile_size,
+                    options.tile_padding,
+                    Color::GRAY,
+                    bomb_image,
+                    font,
+                );
             });
 
         #[cfg(feature = "debug")]
         log::info!("{}", tile_map.console_output());
+    }
+
+    fn spawn_tiles(
+        parent: &mut ChildBuilder,
+        tile_map: &TileMap,
+        tile_size: f32,
+        tile_padding: f32,
+        color: Color,
+        image: Handle<Image>,
+        font: Handle<Font>,
+    ) {
+        for (y, line) in tile_map.iter().enumerate() {
+            for (x, tile) in line.iter().enumerate() {
+                let mut cmd = parent.spawn_empty();
+                cmd.insert(SpriteBundle {
+                    sprite: Sprite {
+                        color,
+                        custom_size: Some(Vec2::splat(tile_size - tile_padding)),
+                        ..default()
+                    },
+                    transform: Transform::from_xyz(
+                        (x as f32 * tile_size) + (tile_size / 2.),
+                        (y as f32 * tile_size) + (tile_size / 2.),
+                        1.,
+                    ),
+                    ..default()
+                })
+                .insert(Name::new(format!("Tile ({x}, {y})")))
+                .insert(Coordinates {
+                    x: x as u16,
+                    y: y as u16,
+                });
+
+                match tile {
+                    Tile::Bomb => {
+                        cmd.insert(Bomb);
+                        cmd.with_children(|parent| {
+                            parent.spawn(SpriteBundle {
+                                sprite: Sprite {
+                                    custom_size: Some(Vec2::splat(tile_size - tile_padding)),
+                                    ..default()
+                                },
+                                transform: Transform::from_xyz(0., 0., 1.),
+                                texture: image.clone(),
+                                ..default()
+                            });
+                        });
+                    }
+                    Tile::Neighbor(count) => {
+                        cmd.insert(Neighbor { count: *count });
+                        cmd.with_children(|parent| {
+                            parent.spawn(Self::bomb_count_text_bundle(
+                                *count,
+                                font.clone(),
+                                tile_size - tile_padding,
+                            ));
+                        });
+                    }
+                    Tile::Empty => (),
+                }
+            }
+        }
     }
 
     fn adaptive_tile_size(
@@ -110,5 +162,36 @@ impl BoardPlugin {
         let max_w = window.resolution.width() / width as f32;
         let max_h = window.resolution.height() / height as f32;
         max_w.min(max_h).clamp(min, max)
+    }
+
+    fn bomb_count_text_bundle(count: u8, font: Handle<Font>, size: f32) -> Text2dBundle {
+        // retrieve the text and the correct color
+        let (text, color) = (
+            count.to_string(),
+            match count {
+                1 => Color::WHITE,
+                2 => Color::GREEN,
+                3 => Color::YELLOW,
+                4 => Color::ORANGE,
+                _ => Color::PURPLE,
+            },
+        );
+
+        Text2dBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: text,
+                    style: TextStyle {
+                        color,
+                        font,
+                        font_size: size,
+                    },
+                }],
+                alignment: TextAlignment::Center,
+                ..default()
+            },
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+        }
     }
 }
