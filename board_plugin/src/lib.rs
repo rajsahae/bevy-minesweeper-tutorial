@@ -1,19 +1,27 @@
 pub mod components;
 pub mod resources;
+mod systems;
+
+mod bounds;
+pub use bounds::Bounds2;
 
 use bevy::log;
 use bevy::prelude::*;
 use bevy::text::{Text, TextAlignment};
 use bevy::window::PrimaryWindow;
 use components::*;
-use resources::{tile::Tile, tile_map::TileMap, BoardOptions, BoardPosition, TileSize};
+use resources::{
+    board::Board, tile::Tile, tile_map::TileMap, BoardOptions, BoardPosition, TileSize,
+};
+use systems::input_handling;
 
 pub struct BoardPlugin;
 
 impl Plugin for BoardPlugin {
     fn build(&self, app: &mut App) {
         log::info!("Loading BoardPlugin");
-        app.add_startup_system(Self::create_board);
+        app.add_startup_system(Self::create_board)
+            .add_system(input_handling);
     }
 }
 
@@ -90,6 +98,15 @@ impl BoardPlugin {
 
         #[cfg(feature = "debug")]
         log::info!("{}", tile_map.console_output());
+
+        commands.insert_resource(Board {
+            tile_map,
+            tile_size,
+            bounds: Bounds2 {
+                position: position.truncate(),
+                size: board_size,
+            },
+        });
     }
 
     fn spawn_tiles(
