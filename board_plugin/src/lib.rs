@@ -18,20 +18,24 @@ use resources::{
 };
 use systems::{input_handling, trigger_event_handler, uncover_tiles};
 
-pub struct BoardPlugin;
+pub struct BoardPlugin<T> {
+    pub running_state: T,
+}
 
-impl Plugin for BoardPlugin {
+impl<T: States> Plugin for BoardPlugin<T> {
     fn build(&self, app: &mut App) {
         log::info!("Loading BoardPlugin");
-        app.add_startup_system(Self::create_board)
-            .add_event::<TileTriggerEvent>()
-            .add_system(input_handling)
-            .add_system(trigger_event_handler)
-            .add_system(uncover_tiles);
+        app.add_event::<TileTriggerEvent>()
+            .add_system(Self::create_board.in_schedule(OnEnter(self.running_state.clone())))
+            .add_systems(
+                (input_handling, trigger_event_handler, uncover_tiles)
+                    .in_set(OnUpdate(self.running_state.clone())),
+            )
+            .add_system(Self::cleanup.in_schedule(OnExit(self.running_state.clone())));
     }
 }
 
-impl BoardPlugin {
+impl<T> BoardPlugin<T> {
     fn create_board(
         mut commands: Commands,
         board_options: Option<Res<BoardOptions>>,
@@ -76,7 +80,7 @@ impl BoardPlugin {
 
         let mut safe_start = None;
 
-        commands
+        let board_entity = commands
             .spawn(SpatialBundle {
                 visibility: Visibility::Visible,
                 transform: Transform::from_translation(position),
@@ -108,7 +112,8 @@ impl BoardPlugin {
                     &mut covered_tiles,
                     &mut safe_start,
                 );
-            });
+            })
+            .id();
 
         if options.safe_start {
             if let Some(entity) = safe_start {
@@ -127,6 +132,7 @@ impl BoardPlugin {
                 size: board_size,
             },
             covered_tiles,
+            entity: board_entity,
         });
     }
 
@@ -255,5 +261,10 @@ impl BoardPlugin {
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
         }
+    }
+
+    fn cleanup(board: Res<Board>, mut commands: Commands) {
+        commands.entity(board.entity).despawn_recursive();
+        commands.remove_resource::<Board>();
     }
 }

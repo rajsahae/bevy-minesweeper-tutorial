@@ -1,1 +1,3 @@
-My implementation of https://dev.to/qongzi/bevy-minesweeper-introduction-4l7f with bevy 0.10.1
+My implementation (in Bevy 0.10.1) of Bevy Minesweeper tutorial, by Felix De Maneville a.k.a. Qongzi.
+
+https://dev.to/qongzi/bevy-minesweeper-introduction-4l7f
