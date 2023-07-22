@@ -82,9 +82,9 @@ impl TileMap {
         self.height
     }
 
-    // pub fn bomb_count(&self) -> u16 {
-    //     self.bomb_count
-    // }
+    pub fn bomb_count(&self) -> u16 {
+        self.bomb_count
+    }
 
     pub fn surrounding_tiles(&self, coordinates: Coordinates) -> impl Iterator<Item = Coordinates> {
         NEIGHBOR_OFFSETS

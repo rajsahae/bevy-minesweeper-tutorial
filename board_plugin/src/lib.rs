@@ -16,7 +16,7 @@ use events::*;
 use resources::{
     board::Board, tile::Tile, tile_map::TileMap, BoardAssets, BoardOptions, BoardPosition, TileSize,
 };
-use systems::{input_handling, trigger_event_handler, uncover_tiles};
+use systems::{input_handling, mark_tiles, trigger_event_handler, uncover_tiles};
 
 pub struct BoardPlugin<T> {
     pub running_state: T,
@@ -26,9 +26,17 @@ impl<T: States> Plugin for BoardPlugin<T> {
     fn build(&self, app: &mut App) {
         log::info!("Loading BoardPlugin");
         app.add_event::<TileTriggerEvent>()
+            .add_event::<TileMarkEvent>()
+            .add_event::<BombExplosionEvent>()
+            .add_event::<BoardCompletedEvent>()
             .add_system(Self::create_board.in_schedule(OnEnter(self.running_state.clone())))
             .add_systems(
-                (input_handling, trigger_event_handler, uncover_tiles)
+                (
+                    input_handling,
+                    trigger_event_handler,
+                    uncover_tiles,
+                    mark_tiles,
+                )
                     .in_set(OnUpdate(self.running_state.clone())),
             )
             .add_system(Self::cleanup.in_schedule(OnExit(self.running_state.clone())));
@@ -126,6 +134,7 @@ impl<T> BoardPlugin<T> {
                 size: board_size,
             },
             covered_tiles,
+            marked_tiles: vec![],
             entity: board_entity,
         });
     }

@@ -1,4 +1,7 @@
-use crate::{events::TileTriggerEvent, Board, Bomb, Coordinates, Neighbor, Uncover};
+use crate::{
+    events::{BoardCompletedEvent, BombExplosionEvent, TileTriggerEvent},
+    Board, Bomb, Coordinates, Neighbor, Uncover,
+};
 use bevy::prelude::*;
 
 pub fn trigger_event_handler(
@@ -18,6 +21,8 @@ pub fn uncover_tiles(
     mut board: ResMut<Board>,
     children: Query<(Entity, &Parent), With<Uncover>>,
     parents: Query<(&Coordinates, Option<&Bomb>, Option<&Neighbor>)>,
+    mut board_completed_event_wr: EventWriter<BoardCompletedEvent>,
+    mut _bomb_explosion_event_wr: EventWriter<BombExplosionEvent>,
 ) {
     for (entity, parent) in children.iter() {
         // destroy the tile cover
@@ -34,6 +39,11 @@ pub fn uncover_tiles(
         match board.try_uncover_tile(coords) {
             Some(e) => debug!("Uncovered tile {coords} (entity: {e:?}"),
             None => debug!("attempted to uncover a tile already uncovered: {coords}"),
+        }
+
+        if board.is_completed() {
+            info!("Board completed");
+            board_completed_event_wr.send(BoardCompletedEvent);
         }
 
         if bomb.is_some() {

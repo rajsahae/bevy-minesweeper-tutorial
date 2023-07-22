@@ -1,4 +1,4 @@
-use crate::events::TileTriggerEvent;
+use crate::events::{TileMarkEvent, TileTriggerEvent};
 use crate::Board;
 
 use bevy::prelude::*;
@@ -9,6 +9,7 @@ pub fn input_handling(
     board: Res<Board>,
     input: Res<Input<MouseButton>>,
     mut tile_trigger: EventWriter<TileTriggerEvent>,
+    mut mark_trigger: EventWriter<TileMarkEvent>,
 ) {
     let window = windows.single();
     if let Some(pos) = window.cursor_position() {
@@ -19,7 +20,7 @@ pub fn input_handling(
             }
             if input.just_pressed(MouseButton::Right) {
                 info!("mark {coordinates}");
-                // generate event
+                mark_trigger.send(TileMarkEvent(coordinates));
             }
             if input.just_pressed(MouseButton::Middle) {
                 info!("hint {coordinates}");
