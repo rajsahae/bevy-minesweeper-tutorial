@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 use board_plugin::{
     resources::{BoardAssets, BoardOptions, SpriteMaterial},
     BoardPlugin,
@@ -9,11 +9,11 @@ use board_plugin::{
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, States)]
 pub enum AppState {
-    InGame,
     #[default]
-    Out,
+    Load,
+    InGame,
     Paused,
-    Reload,
+    Out,
 }
 
 fn main() {
@@ -39,7 +39,9 @@ fn main() {
         .add_startup_system(setup_board)
         .add_state::<AppState>()
         .add_plugin(BoardPlugin {
+            start_state: AppState::Load,
             running_state: AppState::InGame,
+            end_state: AppState::Out,
         })
         .add_system(state_handler)
         .run();
@@ -99,42 +101,42 @@ fn state_handler(
     current: Res<State<AppState>>,
     mut next: ResMut<NextState<AppState>>,
     keys: Res<Input<KeyCode>>,
+    mut exit: EventWriter<AppExit>,
 ) {
     if keys.just_pressed(KeyCode::C) {
-        debug!("clearing detected");
-        if current.0 == AppState::InGame {
+        if current.0 != AppState::Out {
             info!("clearing game");
             next.set(AppState::Out);
         }
     }
-    if keys.just_pressed(KeyCode::G) {
-        debug!("loading detected");
-        if current.0 == AppState::InGame {
-            info!("clear then reload");
-            next.set(AppState::Reload);
-        }
+    if keys.just_pressed(KeyCode::L) {
         if current.0 == AppState::Out {
             info!("loading game");
+            next.set(AppState::Load);
+        }
+    }
+
+    if keys.just_pressed(KeyCode::Escape)
+        || keys.just_pressed(KeyCode::Pause)
+        || keys.just_pressed(KeyCode::P)
+    {
+        debug!("toggle pause");
+        if current.0 == AppState::InGame {
+            info!("pausing");
+            next.set(AppState::Paused);
+        } else if current.0 == AppState::Paused {
+            info!("unpausing");
             next.set(AppState::InGame);
         }
     }
 
-    // TODO: this resets the board because it exits/enters states
-    // Can we find a way to simply disable input_handling system?
+    if keys.just_pressed(KeyCode::Q) {
+        info!("exit");
+        exit.send_default();
+    }
 
-    // if keys.just_pressed(KeyCode::Escape) {
-    //     debug!("toggle pause");
-    //     if current.0 == AppState::InGame {
-    //         info!("pausing");
-    //         next.set(AppState::Paused);
-    //     } else {
-    //         info!("unpausing");
-    //         next.set(AppState::InGame);
-    //     }
-    // }
-
-    if current.0 == AppState::Reload {
-        info!("reloading");
+    if current.0 == AppState::Load {
+        info!("starting game");
         next.set(AppState::InGame);
     }
 }

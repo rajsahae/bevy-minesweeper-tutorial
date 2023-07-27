@@ -19,7 +19,9 @@ use resources::{
 use systems::{input_handling, mark_tiles, trigger_event_handler, uncover_tiles};
 
 pub struct BoardPlugin<T> {
+    pub start_state: T,
     pub running_state: T,
+    pub end_state: T,
 }
 
 impl<T: States> Plugin for BoardPlugin<T> {
@@ -29,7 +31,7 @@ impl<T: States> Plugin for BoardPlugin<T> {
             .add_event::<TileMarkEvent>()
             .add_event::<BombExplosionEvent>()
             .add_event::<BoardCompletedEvent>()
-            .add_system(Self::create_board.in_schedule(OnEnter(self.running_state.clone())))
+            .add_system(Self::create_board.in_schedule(OnExit(self.start_state.clone())))
             .add_systems(
                 (
                     input_handling,
@@ -39,7 +41,7 @@ impl<T: States> Plugin for BoardPlugin<T> {
                 )
                     .in_set(OnUpdate(self.running_state.clone())),
             )
-            .add_system(Self::cleanup.in_schedule(OnExit(self.running_state.clone())));
+            .add_system(Self::cleanup.in_schedule(OnEnter(self.end_state.clone())));
     }
 }
 
