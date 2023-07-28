@@ -14,11 +14,11 @@ default = ["debug"]
 debug = ["board_plugin/debug", "bevy-inspector-egui"]
 
 [dependencies]
-bevy = "0.10.1"
+bevy = "0.11"
 board_plugin = { path = "board_plugin" }
 
 # Hiearchy inspector debug
-bevy-inspector-egui = { version = "0.18.3", optional = true }
+bevy-inspector-egui = { version = "0.19", optional = true }
 
 [workspace]
 members = [

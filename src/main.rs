@@ -30,20 +30,18 @@ fn main() {
 
     // Debug hiearchy inspector
     // #[cfg(feature = "debug")]
-    // app.add_plugin(WorldInspectorPlugin::new());
+    // app.add_plugins(WorldInspectorPlugin::new());
 
     // Bevy default plugins with window setup
     app.add_plugins(DefaultPlugins.set(window))
-        // startup system (cameras)
-        .add_startup_system(setup_camera)
-        .add_startup_system(setup_board)
         .add_state::<AppState>()
-        .add_plugin(BoardPlugin {
+        .add_systems(Startup, (setup_camera, setup_board))
+        .add_systems(Update, state_handler)
+        .add_plugins(BoardPlugin {
             start_state: AppState::Load,
             running_state: AppState::InGame,
             end_state: AppState::Out,
         })
-        .add_system(state_handler)
         .run();
 }
 
@@ -104,13 +102,13 @@ fn state_handler(
     mut exit: EventWriter<AppExit>,
 ) {
     if keys.just_pressed(KeyCode::C) {
-        if current.0 != AppState::Out {
+        if current.get() != &AppState::Out {
             info!("clearing game");
             next.set(AppState::Out);
         }
     }
     if keys.just_pressed(KeyCode::L) {
-        if current.0 == AppState::Out {
+        if current.get() == &AppState::Out {
             info!("loading game");
             next.set(AppState::Load);
         }
@@ -121,10 +119,10 @@ fn state_handler(
         || keys.just_pressed(KeyCode::P)
     {
         debug!("toggle pause");
-        if current.0 == AppState::InGame {
+        if current.get() == &AppState::InGame {
             info!("pausing");
             next.set(AppState::Paused);
-        } else if current.0 == AppState::Paused {
+        } else if current.get() == &AppState::Paused {
             info!("unpausing");
             next.set(AppState::InGame);
         }
@@ -135,7 +133,7 @@ fn state_handler(
         exit.send_default();
     }
 
-    if current.0 == AppState::Load {
+    if current.get() == &AppState::Load {
         info!("starting game");
         next.set(AppState::InGame);
     }

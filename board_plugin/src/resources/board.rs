@@ -15,10 +15,11 @@ pub struct Board {
 
 impl Board {
     /// Translates a mouse position to board coordinates
-    pub fn mouse_position(&self, window: &Window, position: Vec2) -> Option<Coordinates> {
+    pub fn mouse_position(&self, window: &Window, mut position: Vec2) -> Option<Coordinates> {
         // Window to world space
         let window_size = Vec2::new(window.width(), window.height());
-        let position = position - window_size / 2.;
+        position.y = window_size.y - position.y;
+        position = position - window_size / 2.;
 
         // Bounds check
         if !self.bounds.in_bounds(position) {

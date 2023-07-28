@@ -31,17 +31,18 @@ impl<T: States> Plugin for BoardPlugin<T> {
             .add_event::<TileMarkEvent>()
             .add_event::<BombExplosionEvent>()
             .add_event::<BoardCompletedEvent>()
-            .add_system(Self::create_board.in_schedule(OnExit(self.start_state.clone())))
+            .add_systems(OnExit(self.start_state.clone()), Self::create_board)
+            .add_systems(OnEnter(self.end_state.clone()), Self::cleanup)
             .add_systems(
+                Update,
                 (
                     input_handling,
                     trigger_event_handler,
                     uncover_tiles,
                     mark_tiles,
                 )
-                    .in_set(OnUpdate(self.running_state.clone())),
-            )
-            .add_system(Self::cleanup.in_schedule(OnEnter(self.end_state.clone())));
+                    .run_if(in_state(self.running_state.clone())),
+            );
     }
 }
 

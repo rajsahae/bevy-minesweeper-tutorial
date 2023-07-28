@@ -12,6 +12,7 @@ pub fn input_handling(
     mut mark_trigger: EventWriter<TileMarkEvent>,
 ) {
     let window = windows.single();
+
     if let Some(pos) = window.cursor_position() {
         if let Some(coordinates) = board.mouse_position(window, pos) {
             if input.just_pressed(MouseButton::Left) {
@@ -22,10 +23,10 @@ pub fn input_handling(
                 info!("mark {coordinates}");
                 mark_trigger.send(TileMarkEvent(coordinates));
             }
-            if input.just_pressed(MouseButton::Middle) {
-                info!("hint {coordinates}");
-                // generate event
-            }
+            // if input.just_pressed(MouseButton::Middle) {
+            //     info!("hint {coordinates}");
+            //     // generate event
+            // }
         }
     }
 }
