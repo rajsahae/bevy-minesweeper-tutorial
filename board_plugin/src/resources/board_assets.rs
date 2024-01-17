@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::render::texture::DEFAULT_IMAGE_HANDLE;
 
 /// Material of a `Sprite` with a texture and color
 #[derive(Debug, Clone)]
@@ -12,7 +11,7 @@ impl Default for SpriteMaterial {
     fn default() -> Self {
         Self {
             color: Color::WHITE,
-            texture: DEFAULT_IMAGE_HANDLE.typed(),
+            texture: Handle::<Image>::default(),
         }
     }
 }

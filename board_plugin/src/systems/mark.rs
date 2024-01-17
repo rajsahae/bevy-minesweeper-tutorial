@@ -9,7 +9,7 @@ pub fn mark_tiles(
     mut tile_mark_event_rdr: EventReader<TileMarkEvent>,
     query: Query<&Children>,
 ) {
-    for event in tile_mark_event_rdr.iter() {
+    for event in tile_mark_event_rdr.read() {
         if let Some((entity, mark)) = board.try_toggle_mark(&event.0) {
             if mark {
                 commands.entity(entity).with_children(|parent| {

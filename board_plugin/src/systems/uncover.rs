@@ -9,7 +9,7 @@ pub fn trigger_event_handler(
     board: Res<Board>,
     mut tile_trigger: EventReader<TileTriggerEvent>,
 ) {
-    for trigger_event in tile_trigger.iter() {
+    for trigger_event in tile_trigger.read() {
         if let Some(entity) = board.tile_to_uncover(&trigger_event.0) {
             commands.entity(*entity).insert(Uncover);
         }
