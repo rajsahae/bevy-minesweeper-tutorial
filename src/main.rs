@@ -4,8 +4,8 @@ use board_plugin::{
     BoardPlugin,
 };
 
-// #[cfg(feature = "debug")]
-// use bevy_inspector_egui::quick::WorldInspectorPlugin;
+#[cfg(feature = "debug")]
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, States)]
 pub enum AppState {
@@ -28,10 +28,6 @@ fn main() {
 
     let mut app = App::new();
 
-    // Debug hiearchy inspector
-    // #[cfg(feature = "debug")]
-    // app.add_plugins(WorldInspectorPlugin::new());
-
     // Bevy default plugins with window setup
     app.add_plugins(DefaultPlugins.set(window))
         .add_state::<AppState>()
@@ -41,8 +37,13 @@ fn main() {
             start_state: AppState::Load,
             running_state: AppState::InGame,
             end_state: AppState::Out,
-        })
-        .run();
+        });
+
+    // Debug hiearchy inspector
+    #[cfg(feature = "debug")]
+    app.add_plugins(WorldInspectorPlugin::new());
+
+    app.run();
 }
 
 fn setup_camera(mut commands: Commands) {
